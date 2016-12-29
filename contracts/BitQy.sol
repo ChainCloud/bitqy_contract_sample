@@ -128,12 +128,22 @@ contract BitQy is StdToken
 
      function transfer(address _to, uint256 _value) returns (bool success) 
      {
+          if(isStop && !(msg.sender==creator)) {
+               success = false;
+               return;
+          }
+          
           success = super.transfer(_to, _value);
           return;
      }
      
      function transferFrom(address _from, address _to, uint256 _value) returns (bool success) 
      {
+          if(isStop && !(msg.sender==creator)) {
+               success = false;
+               return;
+          }
+
           success = super.transferFrom(_from, _to, _value);
           return;
      }

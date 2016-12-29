@@ -16,6 +16,7 @@ var abi;
 var accounts;
 var creator;
 var client;
+var client2;
 
 var initialFoundersBalance;
 
@@ -36,7 +37,8 @@ describe('Smart Contracts', function() {
                accounts = as;
 
                creator = accounts[0];
-               client = accounts[1];
+               client  = accounts[1];
+               client2 = accounts[2];
 
                done();
           });
@@ -127,15 +129,39 @@ describe('Smart Contracts', function() {
           );
      });
 
-     // TODO:
-     /*
-     // Test stopping, buying, and failing
-     it('should stop ',function(done){
-          var amount = 0.005;
+     it('should not transfer 1 token from client to client2 because balance is zero',function(done){
+          var value = 1;
 
-          var priceShouldBe = 200;
-          var shouldBe = (amount * priceShouldBe);  // current price
+          contract.transfer(
+               client2,   // to
+               value,    // amount of tokens
 
+               {
+                    from: client,
+                    //gas: 3000000, 
+                    //gasPrice: 2000000
+               },
+               function(err, result){
+                    // no throw!
+                    assert.equal(err, null);
+
+                    // 1 - check the balance of creator
+                    contract.balanceOf(client, function(err, result){
+                         assert.equal(err, null);
+                         assert.equal(result.toString(10),0);
+
+                         // 2 - check the balance of client 
+                         contract.balanceOf(client2, function(err, result){
+                              assert.equal(err, null);
+                              assert.equal(result.toString(10),0);
+                              done();
+                         });
+                    });
+               }
+          );
+     });
+
+     it('should not fail if <stop> is called by creator',function(done){
           contract.stop(
                true,
                {
@@ -143,28 +169,104 @@ describe('Smart Contracts', function() {
                     //gas: 3000000, 
                     //gasPrice: 2000000
                },
-
                function(err,result){
                     assert.equal(err,null);
 
-                    contract.buyTokens(
-                         {
-                              from: buyer,      // buyer
-                              value: web3.toWei(amount, 'ether'),
-                              //gasPrice: 2000000
-                         },
-                         function(err, result){
-                              assert.notEqual(err, null);
+                    done();
+               }
+          );
+     });
 
-                              contract.balanceOf(buyer, function(err, result){
-                                   assert.equal(err, null);
+     it('should transfer 1 token from creator to client1 even if stopped',function(done){
+          var value = 1;
 
-                                   // balance should not be changed...
-                                   assert.equal(result.equals(unit.times(new BigNumber(priceShouldBe)).times(new BigNumber(amount))), true);
-                                   done();
-                              });
-                         }
-                    );
+          contract.transfer(
+               client,   // to
+               value,    // amount of tokens
+
+               {
+                    from: creator,
+                    //gas: 3000000, 
+                    //gasPrice: 2000000
+               },
+               function(err, result){
+                    assert.equal(err, null);
+
+                    // 1 - check the balance of creator
+                    contract.balanceOf(creator, function(err, result){
+                         assert.equal(err, null);
+
+                         assert.equal(result.toString(10),10000000000 - 1);
+
+                         // 2 - check the balance of client 
+                         contract.balanceOf(client, function(err, result){
+                              assert.equal(err, null);
+
+                              assert.equal(result.toString(10),1);
+                              done();
+                         });
+                    });
+               }
+          );
+     });
+
+     it('should not transfer 1 token from client to client2 because stopped',function(done){
+          var value = 1;
+
+          contract.transfer(
+               client2,   // to
+               value,    // amount of tokens
+
+               {
+                    from: client,
+                    //gas: 3000000, 
+                    //gasPrice: 2000000
+               },
+               function(err, result){
+                    // no throw!
+                    assert.equal(err, null);
+
+                    // 1 - check the balance of creator
+                    contract.balanceOf(client, function(err, result){
+                         assert.equal(err, null);
+                         assert.equal(result.toString(10),1);
+
+                         // 2 - check the balance of client 
+                         contract.balanceOf(client2, function(err, result){
+                              assert.equal(err, null);
+                              assert.equal(result.toString(10),0);
+                              done();
+                         });
+                    });
+               }
+          );
+     });
+
+     it('should get correct total supply',function(done){
+          contract.totalSupply(function(err, result){
+               assert.equal(err, null);
+
+               console.log('Initial token supply: ');
+               console.log(result.toString(10));
+
+               assert.equal(result.toString(10),10000000000);
+
+               done();
+          });
+     });
+
+     it('should fail if <stop, false> is not called by creator',function(done){
+          contract.stop(
+               false,
+               {
+                    from: client,
+                    //gas: 3000000, 
+                    //gasPrice: 2000000
+               },
+               function(err,result){
+                    assert.notEqual(err,null);
+
+                    done();
                }
           );
      });
@@ -177,7 +279,6 @@ describe('Smart Contracts', function() {
                     //gas: 3000000, 
                     //gasPrice: 2000000
                },
-
                function(err,result){
                     assert.equal(err,null);
 
@@ -185,7 +286,6 @@ describe('Smart Contracts', function() {
                }
           );
      });
-     */
 
      /*
      it('should buy some tokens on behalf of buyer',function(done){
