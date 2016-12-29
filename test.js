@@ -17,6 +17,7 @@ var accounts;
 var creator;
 var client;
 var client2;
+var client3;
 
 var initialFoundersBalance;
 
@@ -39,6 +40,7 @@ describe('Smart Contracts', function() {
                creator = accounts[0];
                client  = accounts[1];
                client2 = accounts[2];
+               client3 = accounts[3];
 
                done();
           });
@@ -287,34 +289,31 @@ describe('Smart Contracts', function() {
           );
      });
 
-     /*
-     it('should buy some tokens on behalf of buyer',function(done){
-          var priceShouldBe = 200;
+     it('should transfer 1 token from client to client2',function(done){
+          var value = 1;
 
-          // accounts[2]
-          var amount = 0.015;
-          var amountWas = 0.005;
+          contract.transfer(
+               client2,   // to
+               value,    // amount of tokens
 
-          contract.buyTokensFor(
-               buyer,
                {
-                    from: founders,               // accounts[2],
-                    value: web3.toWei(amount, 'ether'),
+                    from: client,
+                    //gas: 3000000, 
                     //gasPrice: 2000000
                },
                function(err, result){
+                    // no throw!
                     assert.equal(err, null);
 
-                    contract.balanceOf(buyer, function(err, result){
+                    // 1 - check the balance of creator
+                    contract.balanceOf(client, function(err, result){
                          assert.equal(err, null);
+                         assert.equal(result.toString(10),0);
 
-                         assert.equal(result.equals(unit.times(new BigNumber(priceShouldBe)).times(new BigNumber(amount + amountWas))), true);
-
-
-                         contract.balanceOf(accounts[2], function(err, result){
+                         // 2 - check the balance of client 
+                         contract.balanceOf(client2, function(err, result){
                               assert.equal(err, null);
-
-                              assert.equal(result.equals(unit.times(new BigNumber(priceShouldBe)).times(new BigNumber(0))), true);
+                              assert.equal(result.toString(10),1);
                               done();
                          });
                     });
@@ -322,21 +321,103 @@ describe('Smart Contracts', function() {
           );
      });
 
-     it('buyers balance should be reduced',function(done){
-          var balance = web3.eth.getBalance(buyer);
+     it('should not transfer tokens on behalf of client2 if not allowed',function(done){
+          var value = 1;
 
-          console.log('Buyer balance: ');
-          console.log(balance.toString(10));
-          
-          console.log('Diff: ');
-          console.log(diff.toString(10));
+          contract.transferFrom(
+               client2,  // from
+               client,   // to
+               value,
 
-          // diff includes Gas fees
-          // 0.005 ETH
-          assert.equal((diff.toString() >= 5000000000000000) && (diff.toString() <= 5000000100000000),true);
+               {
+                    from: client3 // by
+               },
+               function(err, result){
+                    // no throw
+                    assert.equal(err, null);
 
-          done();
+                    // 1 - check the balance of creator
+                    contract.balanceOf(client, function(err, result){
+                         assert.equal(err, null);
+                         assert.equal(result.toString(10),0);
+
+                         // 2 - check the balance of client 
+                         contract.balanceOf(client2, function(err, result){
+                              assert.equal(err, null);
+                              assert.equal(result.toString(10),1);
+                              done();
+                         });
+                    });
+               }
+          );
      });
-     */
+
+     it('client2 should allow client3 to transfer his tokens',function(done){
+          var value = 1;
+
+          contract.approve(
+               client3,  // who can move tokens
+               value,    // how much to move 
+
+               {
+                    from: client2
+               },
+               function(err, result){
+                    // no throw
+                    assert.equal(err, null);
+
+                    // 1 - check the balance of creator
+                    contract.balanceOf(client, function(err, result){
+                         assert.equal(err, null);
+                         assert.equal(result.toString(10),0);
+
+                         // 2 - check the balance of client 
+                         contract.balanceOf(client2, function(err, result){
+                              assert.equal(err, null);
+                              assert.equal(result.toString(10),1);
+
+                              // 3 - check the balance of client3
+                              contract.balanceOf(client3, function(err, result){
+                                   assert.equal(err, null);
+                                   assert.equal(result.toString(10),0);
+                                   done();
+                              });
+                         });
+                    });
+               }
+          );
+     });
+
+     it('should transfer tokens on behalf of client2',function(done){
+          var value = 1;
+
+          contract.transferFrom(
+               client2,  // from
+               client,   // to
+               value,
+
+               {
+                    from: client3 // by
+               },
+               function(err, result){
+                    // no throw
+                    assert.equal(err, null);
+
+                    // 1 - check the balance of client
+                    contract.balanceOf(client, function(err, result){
+                         assert.equal(err, null);
+                         assert.equal(result.toString(10),1);
+
+                         // 2 - check the balance of client 
+                         contract.balanceOf(client2, function(err, result){
+                              assert.equal(err, null);
+                              assert.equal(result.toString(10),0);
+                              done();
+                         });
+                    });
+               }
+          );
+     });
+
 });
 

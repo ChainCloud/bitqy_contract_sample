@@ -128,7 +128,7 @@ contract BitQy is StdToken
 
      function transfer(address _to, uint256 _value) returns (bool success) 
      {
-          if(isStop && !(msg.sender==creator)) {
+          if(isStop && (msg.sender!=creator)) {
                success = false;
                return;
           }
@@ -139,7 +139,7 @@ contract BitQy is StdToken
      
      function transferFrom(address _from, address _to, uint256 _value) returns (bool success) 
      {
-          if(isStop && !(msg.sender==creator)) {
+          if(isStop && (msg.sender!=creator)) {
                success = false;
                return;
           }
