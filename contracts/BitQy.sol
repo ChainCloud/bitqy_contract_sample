@@ -1,4 +1,4 @@
-//pragma solidity ^0.4.7; 
+//pragma solidity ^0.4.7;
 
 // Standard token interface (ERC 20)
 // https://github.com/ethereum/EIPs/issues/20
@@ -112,9 +112,6 @@ contract BitQy is StdToken
      uint256 public allSupply = 0;
      address public creator = 0x0;
 
-// Events:
-     event Buy(address indexed sender, uint eth, uint fbt);
-
 // Functions:
      function BitQy()
      {
@@ -123,6 +120,10 @@ contract BitQy is StdToken
           // Minting ten billion digital tokens or coins created on the Ethereum Blockchain 
           // allSupply is OK - it fits in (2^256 - 1).
           allSupply = 10000000000;
+
+          // All tokes are initially preminted and 
+          // the owner of all tokens is this contract creator
+          balances[creator] = allSupply;
      }
 
      function transfer(address _to, uint256 _value) returns (bool success) 

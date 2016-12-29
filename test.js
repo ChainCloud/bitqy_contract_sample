@@ -15,9 +15,8 @@ var BigNumber = require('bignumber.js');
 var abi;
 var accounts;
 var creator;
-var buyer;
+var client;
 
-var initialBuyerBalance;
 var initialFoundersBalance;
 
 var contractAddress;
@@ -37,7 +36,7 @@ describe('Smart Contracts', function() {
                accounts = as;
 
                creator = accounts[0];
-               buyer = accounts[1];
+               client = accounts[1];
 
                done();
           });
@@ -48,18 +47,9 @@ describe('Smart Contracts', function() {
      });
 
 
-     it('should get buyer initial balance',function(done){
-          initialBuyerBalance = web3.eth.getBalance(buyer);
-
-          console.log('Buyer initial balance is: ');
-          console.log(initialBuyerBalance.toString(10));
-
-          done();
-     });
-
      it('Should compile contract', function(done) {
           var file = './contracts/BitQy.sol';
-          var contractName = 'ButQy';
+          var contractName = 'BitQy';
 
           fs.readFile(file, function(err, result){
                assert.equal(err,null);
@@ -115,22 +105,23 @@ describe('Smart Contracts', function() {
                console.log('Initial token supply: ');
                console.log(result.toString(10));
 
-               assert.equal(result.toString(10),0);
+               assert.equal(result.toString(10),10000000000);
 
                done();
           });
      });
 
-     it('should fail if <stop> is called by creator',function(done){
+     it('should fail if <stop> is not called by creator',function(done){
           contract.stop(
                true,
                {
-                    from: buyer,
+                    from: client,
                     //gas: 3000000, 
                     //gasPrice: 2000000
                },
                function(err,result){
                     assert.notEqual(err,null);
+
                     done();
                }
           );
@@ -237,8 +228,6 @@ describe('Smart Contracts', function() {
           console.log('Buyer balance: ');
           console.log(balance.toString(10));
           
-          var diff = initialBuyerBalance - balance;
-
           console.log('Diff: ');
           console.log(diff.toString(10));
 
